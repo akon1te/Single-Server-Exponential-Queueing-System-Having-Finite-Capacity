@@ -20,12 +20,11 @@ class Model():
         self.queue_log = []
         self.server_log = []
 
+
     def generator(self, l: int, mu: int, size: int):
         self.conditions = [[np.random.exponential(
             scale=1/l, size=1)[0], np.random.exponential(1/mu, size=1)[0]] for _ in range(size)]
 
-    def get_conditions(self):
-        return self.conditions
 
     def run(self):
 
@@ -42,26 +41,30 @@ class Model():
             logger.info(
                 f"Before itter. Server state: {remaining_server_time}, Queue state: {current_queue_occupancy}")
 
+            #If time before next requests greater than processing time of the request on server and requests in the queue
             if t1 >= sum(current_queue_occupancy) + remaining_server_time:
                 t1 -= remaining_server_time
-
                 current_time += remaining_server_time
-
+                
+                self.dump(current_time, current_queue_occupancy,
+                              remaining_server_time)
+                
                 while len(current_queue_occupancy) != 0 and t1 > 0:
                     remaining_server_time = current_queue_occupancy.pop(0)
                     t1 -= remaining_server_time
-
                     current_time += remaining_server_time
+                    
                     self.dump(current_time, current_queue_occupancy,
                               remaining_server_time)
 
+                #if server and queue is empty, but request is not here
                 if t1 > 0:
                     current_time += t1
-
                 remaining_server_time = t2
 
             else:
-
+                
+                #If time before next requests lesser than processing time of the request on server
                 if remaining_server_time > t1:
                     remaining_server_time -= t1
                     current_time += t1
@@ -74,11 +77,12 @@ class Model():
                     self.dump(current_time, current_queue_occupancy,
                               remaining_server_time)
 
+                #If time before next requests leeser than processing time of the request on server and requests in the queue
                 else:
 
                     t1 -= remaining_server_time
-                    remaining_server_time = 0
                     current_time += remaining_server_time
+                    remaining_server_time = 0
 
                     while len(current_queue_occupancy) != 0 and t1 != 0:
 
@@ -86,7 +90,7 @@ class Model():
 
                         self.dump(current_time, current_queue_occupancy,
                                   remaining_server_time)
-
+                        
                         if t1 - remaining_server_time > 0:
 
                             t1 -= remaining_server_time
@@ -106,11 +110,13 @@ class Model():
             logger.info(
                 f"After itter. Server state: {remaining_server_time}, Queue state: {current_queue_occupancy}\n")
 
+
     def dump(self, current_time: float, current_queue_occupancy: list, remaining_server_time: float):
 
         self.time_log.append(current_time)
         self.queue_log.append(current_queue_occupancy)
         self.server_log.append(remaining_server_time)
+
 
     def save(self, path: str):
         
