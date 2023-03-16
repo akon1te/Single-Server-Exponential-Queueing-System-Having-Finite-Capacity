@@ -17,7 +17,8 @@ class Model():
         self.max_queue_capacity = max_queue_capacity
         self.conditions = conditions
         self.time_log = []
-        self.queue_log = []
+        self.queue_state_log = []
+        self.queue_size_log = []
         self.server_log = []
 
 
@@ -123,10 +124,11 @@ class Model():
     def dump(self, current_time: float, current_queue_occupancy: list, remaining_server_time: float):
 
         self.time_log.append(current_time)
-        self.queue_log.append(len(current_queue_occupancy))
+        self.queue_state_log.append(current_queue_occupancy)
+        self.queue_size_log.append(len(current_queue_occupancy))
         self.server_log.append(remaining_server_time)
-
-
+ 
+    
     def save(self, path: str):
         
         try:
@@ -136,7 +138,9 @@ class Model():
         
         with open(f'{path}/time.pkl', 'wb') as tf:
             pickle.dump(self.time_log, tf)
-        with open(f'{path}/queue.pkl', 'wb') as qf:
-            pickle.dump(self.queue_log, qf)
+        with open(f'{path}/queue_size.pkl', 'wb') as qf:
+            pickle.dump(self.queue_size_log, qf)
+        with open(f'{path}/queue_state.pkl', 'wb') as qf:
+            pickle.dump(self.queue_state_log, qf)
         with open(f'{path}/server.pkl', 'wb') as sf:
             pickle.dump(self.server_log, sf)
