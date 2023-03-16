@@ -7,7 +7,7 @@ import pickle
 MAX_CAPACITY = 20
 LAMBDA = 2
 MU = 1
-SIZE = 10000
+SIZE = 100000
 PATH = "dumps"
 
 
@@ -64,14 +64,21 @@ def test_W():
     waiting_times = []     
     
     for i in range(len(time)):
-        waiting_times.append(server[i] + np.sum(queue_state[i][0:-1]))
+        waiting_times.append(server[i] + np.sum(queue_state[i]))
+
+    waiting_times = np.cumsum(waiting_times) / np.array(list(range(1, len(time) + 1)))
 
     lambda_a = LAMBDA * (1 - P[-1])
-
     W = L / lambda_a
-    mean_wt = np.mean(waiting_times)
-    print(f"Test W: {W} - {mean_wt}")
-    
+
+    fig, ax = plt.subplots()
+    plt.title('Среднее время ожидания')
+    ax.plot(range(len(time)), waiting_times, alpha=0.5, label='Экспериментальное')
+    ax.axhline(y=W, color='k', linestyle='--', label='Теоритическое')
+    plt.legend()
+    plt.show()    
+
+    print(f"Test W: {W} - {waiting_times[-1]}")
     
 
 if __name__ == "__main__":
@@ -79,7 +86,8 @@ if __name__ == "__main__":
     model.generator(l=LAMBDA, mu=MU, size=SIZE)
     model.run()
     model.save(PATH)
+
     #test_L()
     #test_P()
-    #test_W()
+    test_W()
     
