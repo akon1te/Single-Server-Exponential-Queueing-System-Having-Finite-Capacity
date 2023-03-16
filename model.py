@@ -124,10 +124,10 @@ class Model():
     def dump(self, current_time: float, current_queue_occupancy: list, remaining_server_time: float):
 
         self.time_log.append(current_time)
-        self.queue_state_log.append(current_queue_occupancy)
+        self.queue_state_log.append(current_queue_occupancy.copy())
         self.queue_size_log.append(len(current_queue_occupancy))
         self.server_log.append(remaining_server_time)
- 
+        
     
     def save(self, path: str):
         
@@ -135,6 +135,7 @@ class Model():
             os.mkdir(path)
         except:
             pass
+        
         
         with open(f'{path}/time.pkl', 'wb') as tf:
             pickle.dump(self.time_log, tf)

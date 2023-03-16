@@ -7,19 +7,20 @@ import pickle
 MAX_CAPACITY = 20
 LAMBDA = 2
 MU = 1
-SIZE = 100000
+SIZE = 10000
 PATH = "dumps"
 
 
 def load_dumps():
     with open(f'{PATH}/time.pkl', 'rb') as tf:
-        time = np.array(pickle.load(tf))
+        time = pickle.load(tf)
     with open(f'{PATH}/queue_size.pkl', 'rb') as qf:
-        queue_size = np.array(pickle.load(qf))
+        queue_size = pickle.load(qf)
     with open(f'{PATH}/queue_state.pkl', 'rb') as qf:
-        queue_state = np.array(pickle.load(qf))
+        queue_state = pickle.load(qf)
     with open(f'{PATH}/server.pkl', 'rb') as sf:
-        server = np.array(pickle.load(sf))
+        server = pickle.load(sf)
+
     return time, queue_size, queue_state, server
 
 
@@ -50,15 +51,27 @@ def test_L():
  
     _, queue, _, _ = load_dumps()
 
-    print(f"Test L: {L}, {np.mean(queue)}")
+    print(f"Test L: {L} - {np.mean(queue)}")
     
 
 def test_W():
 
-
+    pn = lambda i: (((LAMBDA/MU)**i) * (1 - LAMBDA/MU)) / (1 - (LAMBDA/MU)**(MAX_CAPACITY + 1))
+    P = np.array([pn(i) for i in range(MAX_CAPACITY + 1)])
+    L = (LAMBDA*(1 + MAX_CAPACITY*(LAMBDA/MU)**(MAX_CAPACITY+1) - (MAX_CAPACITY + 1)*(LAMBDA/MU)**MAX_CAPACITY)) / ((MU - LAMBDA)*(1 - (LAMBDA/MU)**(MAX_CAPACITY+1)))
+ 
     time, _, queue_state, server = load_dumps()    
+    waiting_times = []     
+    
+    for i in range(len(time)):
+        waiting_times.append(server[i] + np.sum(queue_state[i][0:-1]))
 
-    pass
+    lambda_a = LAMBDA * (1 - P[-1])
+
+    W = L / lambda_a
+    mean_wt = np.mean(waiting_times)
+    print(f"Test W: {W} - {mean_wt}")
+    
     
 
 if __name__ == "__main__":
@@ -66,6 +79,7 @@ if __name__ == "__main__":
     model.generator(l=LAMBDA, mu=MU, size=SIZE)
     model.run()
     model.save(PATH)
-    test_L()
-    test_P()
+    #test_L()
+    #test_P()
+    #test_W()
     
