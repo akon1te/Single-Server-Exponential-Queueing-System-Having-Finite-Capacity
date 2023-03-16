@@ -114,7 +114,7 @@ class Model():
     def dump(self, current_time: float, current_queue_occupancy: list, remaining_server_time: float):
 
         self.time_log.append(current_time)
-        self.queue_log.append(current_queue_occupancy)
+        self.queue_log.append(len(current_queue_occupancy))
         self.server_log.append(remaining_server_time)
 
 
