@@ -1,28 +1,33 @@
 from model import Model
 import matplotlib.pyplot as plt
-from collections import defaultdict
 import numpy as np
 import pickle
 
 
-MAX_CAPACITY = 50
+MAX_CAPACITY = 20
 LAMBDA = 2
 MU = 1
-SIZE = 10000
+SIZE = 100000
 PATH = "dumps"
 
 
+def load_dumps():
+    with open(f'{PATH}/time.pkl', 'rb') as tf:
+        time = np.array(pickle.load(tf))
+    with open(f'{PATH}/queue_size.pkl', 'rb') as qf:
+        queue_size = np.array(pickle.load(qf))
+    with open(f'{PATH}/queue_state.pkl', 'rb') as qf:
+        queue_state = np.array(pickle.load(qf))
+    with open(f'{PATH}/server.pkl', 'rb') as sf:
+        server = np.array(pickle.load(sf))
+    return time, queue_size, queue_state, server
+
+
 def test_P():
-    
     pn = lambda i: (((LAMBDA/MU)**i) * (1 - LAMBDA/MU)) / (1 - (LAMBDA/MU)**(MAX_CAPACITY + 1))
     P = np.array([pn(i) for i in range(MAX_CAPACITY + 1)])
     
-    with open(f'{PATH}/time.pkl', 'rb') as tf:
-        time = pickle.load(tf)
-    with open(f'{PATH}/queue.pkl', 'rb') as qf:
-        queue = pickle.load(qf) 
-    with open(f'{PATH}/server.pkl', 'rb') as sf:
-        server = pickle.load(sf)
+    time, queue, _, _ = load_dumps()
     
     total_time = time[-1]
     states_time = np.array([0] * (MAX_CAPACITY + 1), dtype=float)
@@ -30,32 +35,30 @@ def test_P():
     for i in range(len(time) - 1):
         states_time[queue[i]] += (time[i + 1] - time[i])
     states_time /= total_time
-
-    print(f"Test P")
-    print(P)
-    print(states_time)
-    #print(np.abs(P - states_time))  
     
     fig, ax = plt.subplots()
-    ax.plot(range(MAX_CAPACITY + 1), states_time)
-    ax.plot(range(MAX_CAPACITY + 1), P)
+    plt.title('Стационарное распределение')
+    ax.bar(range(MAX_CAPACITY + 1), states_time, alpha=0.5, label='Экспериментальное')
+    ax.bar(range(MAX_CAPACITY + 1), P, alpha=0.5, label='Теоритическое')
+    plt.legend()
     plt.show()     
-    
     
 
 def test_L():
     
     L = (LAMBDA*(1 + MAX_CAPACITY*(LAMBDA/MU)**(MAX_CAPACITY+1) - (MAX_CAPACITY + 1)*(LAMBDA/MU)**MAX_CAPACITY)) / ((MU - LAMBDA)*(1 - (LAMBDA/MU)**(MAX_CAPACITY+1)))
  
-    with open(f'{PATH}/queue.pkl', 'rb') as qf:
-        queue = pickle.load(qf) 
-    with open(f'{PATH}/time.pkl', 'rb') as tf:
-        time = pickle.load(tf)
-    with open(f'{PATH}/server.pkl', 'rb') as sf:
-        server = pickle.load(sf)
+    _, queue, _, _ = load_dumps()
 
     print(f"Test L: {L}, {np.mean(queue)}")
     
+
+def test_W():
+
+
+    time, _, queue_state, server = load_dumps()    
+
+    pass
     
 
 if __name__ == "__main__":
