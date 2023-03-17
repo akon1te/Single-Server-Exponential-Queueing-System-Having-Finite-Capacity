@@ -34,9 +34,6 @@ class Model():
         current_time = 0
         remaining_server_time = 0
         current_queue_occupancy = []
-        
-        self.dump(current_time, current_queue_occupancy,
-            remaining_server_time)
 
         while len(self.conditions) != 0:
 
@@ -48,25 +45,25 @@ class Model():
             #If time before next requests greater than processing time of the request on server and requests in the queue
             if t1 >= sum(current_queue_occupancy) + remaining_server_time:
                 while len(current_queue_occupancy) != 0 and t1 > 0:
-                    
+
                     t1 -= remaining_server_time
                     current_time += remaining_server_time
                     remaining_server_time = 0
                     if len(current_queue_occupancy) != 0:
                         remaining_server_time = current_queue_occupancy.pop(0)
-                        
+
                     self.dump(current_time, current_queue_occupancy,
                                 remaining_server_time)
 
                 #Adding new request on server
                 current_time += t1
                 remaining_server_time = t2
-                
+
                 self.dump(current_time, current_queue_occupancy,
                                 remaining_server_time)
 
             else:
-                
+
                 #If time before next requests lesser than processing time of the request on server
                 if remaining_server_time > t1:
                     remaining_server_time -= t1
@@ -82,15 +79,15 @@ class Model():
 
                 #If time before next requests leeser than processing time of the request on server and requests in the queue
                 else:
-                    
+
                     while len(current_queue_occupancy) != 0 and t1 != 0:
-                        
+
                         if t1 > remaining_server_time:
                             t1 -= remaining_server_time
                             current_time += remaining_server_time
                             if len(current_queue_occupancy) != 0:
                                 remaining_server_time = current_queue_occupancy.pop(0)
-                                
+
                             self.dump(current_time, current_queue_occupancy,
                                   remaining_server_time)
                         else:
@@ -103,22 +100,18 @@ class Model():
 
             logger.info(
                 f"After itter. Server state: {remaining_server_time}, Queue state: {current_queue_occupancy}\n")
-        
+
         if remaining_server_time != 0 or len(current_queue_occupancy):
             current_time += remaining_server_time
-            
+
             while len(current_queue_occupancy) != 0:
-                
+
                 remaining_server_time = current_queue_occupancy.pop(0)
-                
+
                 self.dump(current_time, current_queue_occupancy,
                 remaining_server_time)
-                
+
                 current_time += remaining_server_time
-            
-        self.dump(current_time, current_queue_occupancy,
-        remaining_server_time)
-                
 
 
     def dump(self, current_time: float, current_queue_occupancy: list, remaining_server_time: float):
@@ -127,16 +120,16 @@ class Model():
         self.queue_state_log.append(current_queue_occupancy.copy())
         self.queue_size_log.append(len(current_queue_occupancy))
         self.server_log.append(remaining_server_time)
-        
-    
+
+
     def save(self, path: str):
-        
+
         try:
             os.mkdir(path)
         except:
             pass
-        
-        
+
+
         with open(f'{path}/time.pkl', 'wb') as tf:
             pickle.dump(self.time_log, tf)
         with open(f'{path}/queue_size.pkl', 'wb') as qf:
